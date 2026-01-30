@@ -69,6 +69,7 @@
             transition: 0.1s;
             box-shadow: 0 15px #00000033;
             pointer-events: auto;
+            z-index: 20; /* ensure buttons sit above other UI elements when moved */
         }
 
         .btn:active {
@@ -178,14 +179,19 @@
         // 2. The "Fair" Runaway Button
         function runAway(btn) {
             // small delay gives fast fingers a chance to click
+            // reduce the move distance so it only "dodges" a little
             setTimeout(() => {
                 // ensure absolute positioning so left/top work
                 if (getComputedStyle(btn).position !== 'absolute') {
                     btn.style.position = 'absolute';
+                    // set initial left/top so subsequent moves are relative to current location
+                    const rect = btn.getBoundingClientRect();
+                    btn.style.left = rect.left + 'px';
+                    btn.style.top = rect.top + 'px';
                 }
 
                 const rect = btn.getBoundingClientRect();
-                const maxOffset = 120; // only move a small distance so user can chase it
+                const maxOffset = 40; // moved down from 120 to make it only dodge a little
                 const dx = (Math.random() * 2 - 1) * maxOffset; // -maxOffset..+maxOffset
                 const dy = (Math.random() * 2 - 1) * maxOffset;
 
@@ -198,7 +204,7 @@
 
                 btn.style.left = x + 'px';
                 btn.style.top = y + 'px';
-            }, 150); 
+            }, 300); // a slightly longer delay so quick clicks can still register
         }
 
         function caughtIt() {
@@ -217,14 +223,34 @@
           '🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚',
           '😋','😜','🤪','😝','😛','🤑','🤗','🤭','🤫','🤔',
           '🤨','😐','😑','😶','🙄','😏','😮',
-          '😲','🤤','😵',
-          '🥴',,'👻','👽','👾','🤖','🎃',
+          '😲','🤤','😵','🥴','👻','👽','👾','🤖','🎃',
           '😺','😸','😹','😻','😼','😽','🙀','😿','😾','🐶',
           '🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
-          '🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🦄','🐝'
+          '🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🦄','🐝',
+          '🌸','🌼','🌻','🌷','🌹','🍀','🍃','🍁','🔥','✨',
+          '💥','💫','🎉','🎊','🎈','🎵','🎶','🔔','⭐','🌟'
         ];
 
         function remixBackground() {
+            // change the page background to a new random gradient
+            const gradients = [
+              'linear-gradient(135deg, #f14c93, #a64ca6, #4c82c1, #36a9e1)',
+              'linear-gradient(135deg, #ff9a9e, #fad0c4)',
+              'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+              'linear-gradient(135deg, #f6d365, #fda085)',
+              'linear-gradient(135deg, #84fab0, #8fd3f4)',
+              'linear-gradient(135deg, #ffecd2, #fcb69f)',
+              'linear-gradient(135deg, #66a6ff, #89f7fe)',
+              'linear-gradient(135deg, #c2e59c, #64b3f4)'
+            ];
+            const newBg = gradients[Math.floor(Math.random() * gradients.length)];
+            document.body.style.background = newBg;
+
+            // briefly add disco animation so the background feels 'remixed'
+            document.body.classList.add('disco-mode');
+            setTimeout(() => document.body.classList.remove('disco-mode'), 2500);
+
+            // still do the emoji confetti for fun
             const picked = [];
             while (picked.length < 5) {
                 const idx = Math.floor(Math.random() * EMOJI_POOL.length);
