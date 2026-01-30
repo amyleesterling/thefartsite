@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sophia and Cora's SFX Website</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    
+    <style>
+        body {
+            /* Nature Methods inspired gradient */
+            background: linear-gradient(135deg, #f14c93, #a64ca6, #4c82c1, #36a9e1);
+            background-size: 400% 400%;
+            min-height: 100vh; 
+            margin: 0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            font-family: 'Comic Sans MS', sans-serif; 
+            color: white;
+            transition: 0.5s;
+            overflow: hidden; /* Prevents scrollbars from sparkles */
+        }
+
+        /* Drawing Canvas Layer */
+        #drawing-board {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            z-index: 1; /* Behind buttons */
+            cursor: crosshair;
+        }
+
+        /* UI Layer - Keeps buttons clickable over the paint */
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none; /* Allows clicks to pass through container */
+        }
+
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        /* Disco Animation */
+        @keyframes disco {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .disco-mode {
+            animation: disco 2s linear infinite;
+        }
+
+        /* Reactive Buttons */
+        .btn {
+            padding: 40px; 
+            font-size: 50px; 
+            margin: 15px; 
+            cursor: pointer;
+            border-radius: 30px; 
+            border: none; 
+            transition: 0.1s;
+            box-shadow: 0 15px #00000033;
+            pointer-events: auto;
+        }
+
+        .btn:active {
+            transform: scale(0.8) rotate(5deg);
+            box-shadow: 0 5px #00000033;
+        }
+
+        #fart-btn { background: #8B4513; }
+        #woosh-btn { background: #36a9e1; }
+        #meow-btn { background: #b817aa; }
+        #disco-btn { background: #ffcc00; font-size: 25px; padding: 20px; }
+        #clear-btn { background: white; color: black; font-size: 20px; padding: 15px; }
+        
+        #runaway-btn { 
+            background: #ff4747; 
+            transition: left 0.3s ease-out, top 0.3s ease-out; /* Smooth slide */
+        }
+
+        /* Sparkle Style */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: fadeOut 1s forwards;
+            z-index: 15;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-50px); }
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <canvas id="drawing-board"></canvas>
+
+    <div class="ui-layer">
+        <h1>Sophia and Cora's Clickety Website</h1>
+        
+        <div class="btn-container">
+            <button id="fart-btn" class="btn" onclick="megaEffect('fart', '💩')">💩</button>
+            <button id="woosh-btn" class="btn" onclick="megaEffect('woosh', '☁️')">☁️</button>
+            <button id="meow-btn" class="btn" onclick="megaEffect('meow', '🐱')">🐱</button>
+            <button id="runaway-btn" class="btn" onmouseenter="runAway(this)" onclick="caughtIt()">🏃‍♂️</button>
+        </div>
+
+        <div style="margin-top: 20px; pointer-events: auto;">
+            <button id="disco-btn" class="btn" onclick="toggleDisco()">🕺 BACKGROUND REMIX 💃</button>
+            <button id="clear-btn" class="btn" onclick="clearCanvas()">🗑️ CLEAR PAINT</button>
+        </div>
+    </div>
+
+    <script>
+        const jsConfetti = new JSConfetti();
+        const canvas = document.getElementById('drawing-board');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        const sounds = {
+            fart: new Audio('sfx/fart_1.mp3'),
+            woosh: new Audio('sfx/woosh.mp3'),
+            meow: new Audio('sfx/meow.mp3'),
+            win: new Audio('sfx/win.mp3') // Ensure win.mp3 is in sfx folder!
+        };
+
+        // 1. Drawing Board Setup
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        canvas.addEventListener('mousedown', () => drawing = true);
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; // Glowy white paint
+            ctx.lineTo(e.clientX, e.clientY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX, e.clientY);
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 2. The "Fair" Runaway Button
+        function runAway(btn) {
+            // 150ms delay gives fast fingers a chance to click!
+            setTimeout(() => {
+                btn.style.position = 'absolute';
+                const x = Math.random() * (window.innerWidth - 200);
+                const y = Math.random() * (window.innerHeight - 200);
+                btn.style.left = x + 'px';
+                btn.style.top = y + 'px';
+            }, 150); 
+        }
+
+        function caughtIt() {
+            if(sounds.win) sounds.win.play();
+            jsConfetti.addConfetti({ 
+                emojis: ['🏆', '👑', '⭐', '💎'], 
+                emojiSize: 100, 
+                confettiNumber: 100 
+            });
+            alert("SOPHIA AND CORA ARE THE CHAMPIONS!");
+        }
+
+        // 3. Disco Ceiling Shower
+        let discoInterval;
+        function toggleDisco() {
+            const isDisco = document.getElementById('main-body').classList.toggle('disco-mode');
+            if (isDisco) {
+                discoInterval = setInterval(() => {
+                    jsConfetti.addConfetti({ 
+                        emojis: ['🌈', '✨', '🎈', '🎨'], 
+                        confettiNumber: 20 
+                    });
+                }, 500);
+            } else {
+                clearInterval(discoInterval);
+            }
+        }
+
+        // 4. Standard Effects
+        function megaEffect(type, emoji) {
+            if(sounds[type]) {
+                sounds[type].currentTime = 0;
+                sounds[type].play();
+            }
+            jsConfetti.addConfetti({ 
+                emojis: [emoji, '✨', '⭐'], 
+                emojiSize: 100, 
+                confettiNumber: 40 
+            });
+        }
+
+        // 5. Sparkle Trail
+        document.addEventListener('mousemove', (e) => {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.innerHTML = '✨';
+            sparkle.style.left = e.pageX + 'px';
+            sparkle.style.top = e.pageY + 'px';
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 1000);
+        });
+    </script>
+</body>
+</html>
