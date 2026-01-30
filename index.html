@@ -117,7 +117,7 @@
         </div>
 
         <div style="margin-top: 20px; pointer-events: auto;">
-            <button id="disco-btn" class="btn" onclick="toggleDisco()">🕺 BACKGROUND REMIX 💃</button>
+            <button id="disco-btn" class="btn" onclick="remixBackground()">🕺 BACKGROUND REMIX 💃</button>
             <button id="clear-btn" class="btn" onclick="clearCanvas()">🗑️ CLEAR PAINT</button>
         </div>
     </div>
@@ -211,20 +211,33 @@
             alert("SOPHIA AND CORA ARE THE CHAMPIONS!");
         }
 
-        // 3. Disco Ceiling Shower
-        let discoInterval;
-        function toggleDisco() {
-            const isDisco = document.getElementById('main-body').classList.toggle('disco-mode');
-            if (isDisco) {
-                discoInterval = setInterval(() => {
-                    jsConfetti.addConfetti({ 
-                        emojis: ['🌈', '✨', '🎈', '🎨'], 
-                        confettiNumber: 20 
-                    });
-                }, 500);
-            } else {
-                clearInterval(discoInterval);
+        // 3. Background Remix - 100 emoji pool, pick 5 unique random emojis per click
+        const EMOJI_POOL = [
+          '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇',
+          '🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚',
+          '😋','😜','🤪','😝','😛','🤑','🤗','🤭','🤫','🤔',
+          '🤨','😐','😑','😶','🙄','😏','😣','😥','😮','😯',
+          '😲','😳','🥺','😦','😧','😨','😰','😢','😭','😤',
+          '😠','😡','🤬','🤯','🥵','🥶','😱','😴','🤤','😵',
+          '🤐','🥴','🤢','🤮','🤧','👻','👽','👾','🤖','🎃',
+          '😺','😸','😹','😻','😼','😽','🙀','😿','😾','🐶',
+          '🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+          '🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🦄','🐝'
+        ];
+
+        function remixBackground() {
+            const picked = [];
+            while (picked.length < 5) {
+                const idx = Math.floor(Math.random() * EMOJI_POOL.length);
+                const e = EMOJI_POOL[idx];
+                if (!picked.includes(e)) picked.push(e);
             }
+
+            jsConfetti.addConfetti({
+                emojis: picked,
+                emojiSize: 80,
+                confettiNumber: 60
+            });
         }
 
         // 4. Standard Effects
