@@ -143,8 +143,22 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => drawing = false);
+        // Start a fresh path when pressing down, and reset path when releasing or leaving the canvas.
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            // Reset the path so the next stroke doesn't connect to the previous one
+            ctx.beginPath();
+        });
+        canvas.addEventListener('mouseleave', () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+
         canvas.addEventListener('mousemove', (e) => {
             if (!drawing) return;
             ctx.lineWidth = 15;
@@ -152,6 +166,7 @@
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; // Glowy white paint
             ctx.lineTo(e.clientX, e.clientY);
             ctx.stroke();
+            // keep the line continuous for this small segment, then start a new segment
             ctx.beginPath();
             ctx.moveTo(e.clientX, e.clientY);
         });
@@ -162,11 +177,25 @@
 
         // 2. The "Fair" Runaway Button
         function runAway(btn) {
-            // 150ms delay gives fast fingers a chance to click!
+            // small delay gives fast fingers a chance to click
             setTimeout(() => {
-                btn.style.position = 'absolute';
-                const x = Math.random() * (window.innerWidth - 200);
-                const y = Math.random() * (window.innerHeight - 200);
+                // ensure absolute positioning so left/top work
+                if (getComputedStyle(btn).position !== 'absolute') {
+                    btn.style.position = 'absolute';
+                }
+
+                const rect = btn.getBoundingClientRect();
+                const maxOffset = 120; // only move a small distance so user can chase it
+                const dx = (Math.random() * 2 - 1) * maxOffset; // -maxOffset..+maxOffset
+                const dy = (Math.random() * 2 - 1) * maxOffset;
+
+                let x = rect.left + dx;
+                let y = rect.top + dy;
+
+                // clamp to viewport so button doesn't disappear off-screen
+                x = Math.max(0, Math.min(x, window.innerWidth - btn.offsetWidth));
+                y = Math.max(0, Math.min(y, window.innerHeight - btn.offsetHeight));
+
                 btn.style.left = x + 'px';
                 btn.style.top = y + 'px';
             }, 150); 
